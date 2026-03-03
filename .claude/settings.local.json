@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/ledangkhoa/.claude -name \"*.json\" -type f 2>/dev/null | grep -E \"\\(settings|config\\)\" | head -10)",
+      "Bash(node --version 2>/dev/null && npm --version 2>/dev/null)",
+      "Bash(git log --oneline /Users/ledangkhoa/Desktop/testing-running-claude-code 2>/dev/null | head -5; git -C /Users/ledangkhoa/Desktop/testing-running-claude-code log --oneline 2>/dev/null | head -5)",
+      "Bash(git -C /Users/ledangkhoa/Desktop/testing-running-claude-code status 2>&1)",
+      "Bash(npm show react@latest version 2>/dev/null; npm show vite@latest version 2>/dev/null; npm show tailwindcss@3 version 2>/dev/null)",
+      "Bash(npm show tailwindcss@\"^3\" version --json 2>/dev/null | tail -1)",
+      "Bash(npm show @vitejs/plugin-react@latest version 2>/dev/null; npm show typescript@latest version 2>/dev/null; npm show eslint@latest version 2>/dev/null; npm show prettier@latest version 2>/dev/null)",
+      "Bash(npm show autoprefixer@latest version 2>/dev/null; npm show postcss@latest version 2>/dev/null; npm show @types/react@latest version 2>/dev/null; npm show @types/react-dom@latest version 2>/dev/null)",
+      "Bash(npm show eslint-plugin-react-hooks@latest version 2>/dev/null; npm show eslint-plugin-react-refresh@latest version 2>/dev/null; npm show @typescript-eslint/eslint-plugin@latest version 2>/dev/null; npm show @typescript-eslint/parser@latest version 2>/dev/null)",
+      "Bash(npm create vite@latest . -- --template react-ts --yes 2>&1)",
+      "Bash(cp -r /tmp/todo-scaffold/. /Users/ledangkhoa/Desktop/testing-running-claude-code/ 2>&1 && ls /Users/ledangkhoa/Desktop/testing-running-claude-code/)",
+      "Bash(npm install 2>&1 | tail -5)",
+      "Bash(npm install -D tailwindcss @tailwindcss/vite 2>&1 | tail -5)",
+      "Bash(npm install express better-sqlite3 cors 2>&1 | tail -5)",
+      "Bash(npm install -D @types/express @types/better-sqlite3 @types/cors tsx concurrently prettier 2>&1 | tail -5)",
+      "Bash(npm run lint 2>&1)",
+      "Bash(npx tsc --noEmit 2>&1)",
+      "Bash(git add CLAUDE.md README.md TODOS.md eslint.config.js index.html package.json package-lock.json public/ server/ src/ tsconfig.app.json tsconfig.json tsconfig.node.json tsconfig.server.json vite.config.ts .gitignore && git status)",
+      "Bash(git add .claude/ && git status --short)"
+    ]
+  }
+}

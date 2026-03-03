@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/ledangkhoa/Desktop/testing-running-claude-code && npm run lint 2>&1 | tail -20"
+          },
+          {
+            "type": "command",
+            "command": "cd /Users/ledangkhoa/Desktop/testing-running-claude-code && npx tsc --noEmit 2>&1 | tail -20"
+          }
+        ]
+      }
+    ]
+  }
+}
