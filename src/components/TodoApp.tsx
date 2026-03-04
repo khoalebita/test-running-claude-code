@@ -18,6 +18,8 @@ export default function TodoApp() {
     try {
       const data = await fetchTodos()
       setTodos(data)
+    } catch {
+      // silently handle load errors
     } finally {
       setLoading(false)
     }
