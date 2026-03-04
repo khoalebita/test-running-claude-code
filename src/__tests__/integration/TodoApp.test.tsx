@@ -1,28 +1,48 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import TodoApp from '../../components/TodoApp'
+
 import type { Todo } from '../../types/todo'
+import TodoApp from '../../components/todo'
+
+type MockBody = Todo[] | null
+
+type MockResponse = {
+  ok: boolean
+  status?: number
+  body?: MockBody
+}
+
+type MockFetchReturn = {
+  ok: boolean
+  status: number
+  json: () => Promise<MockBody>
+}
 
 // Queue-based fetch mock: each call consumes one response from the queue
-function makeFetchMock(responses: Array<{ ok: boolean; status?: number; body?: unknown }>) {
+function makeFetchMock(responses: MockResponse[]) {
   const queue = [...responses]
+
   return vi.fn().mockImplementation(() => {
     const next = queue.shift()
+
     if (!next) throw new Error('Fetch mock queue exhausted')
-    return Promise.resolve({
+
+    const result: MockFetchReturn = {
       ok: next.ok,
       status: next.status ?? (next.ok ? 200 : 500),
-      json: () => Promise.resolve(next.body),
-    })
+      json: () => Promise.resolve(next.body ?? null),
+    }
+
+    return Promise.resolve(result)
   })
 }
 
-function jsonResponse(body: unknown) {
+function jsonResponse(body: MockBody): MockResponse {
   return { ok: true, body }
 }
 
-function makeOkResponse(status: number = 200) {
+function makeOkResponse(status: number = 200): MockResponse {
   return { ok: true, status, body: null }
 }
 
@@ -46,25 +66,34 @@ afterEach(() => {
 
 describe('TodoApp — loading and empty state', () => {
   it('shows loading spinner before fetch resolves', async () => {
-    let resolveFirst!: (value: unknown) => void
-    const pending = new Promise((res) => { resolveFirst = res })
+    let resolveFirst!: (value: MockFetchReturn) => void
+    const pending = new Promise<MockFetchReturn>((res) => {
+      resolveFirst = res
+    })
+
     vi.stubGlobal('fetch', vi.fn().mockReturnValue(pending))
 
     render(<TodoApp />)
+
     // Spinner has animate-spin class
     expect(document.querySelector('.animate-spin')).toBeInTheDocument()
-    resolveFirst({ ok: true, json: () => Promise.resolve([]) })
+
+    resolveFirst({ ok: true, status: 200, json: () => Promise.resolve([]) })
   })
 
   it('shows TodoEmpty after empty GET response', async () => {
     vi.stubGlobal('fetch', makeFetchMock([jsonResponse([])]))
+
     render(<TodoApp />)
+
     await waitFor(() => expect(screen.getByText('No todos yet')).toBeInTheDocument())
   })
 
   it('does not crash on network error, shows TodoEmpty', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')))
+
     render(<TodoApp />)
+
     await waitFor(() => expect(screen.getByText('No todos yet')).toBeInTheDocument())
   })
 })
@@ -75,8 +104,11 @@ describe('TodoApp — renders todos after load', () => {
       makeTodo({ id: '1', title: 'First task' }),
       makeTodo({ id: '2', title: 'Second task' }),
     ]
+
     vi.stubGlobal('fetch', makeFetchMock([jsonResponse(todos)]))
+
     render(<TodoApp />)
+
     await waitFor(() => expect(screen.getByText('First task')).toBeInTheDocument())
     expect(screen.getByText('Second task')).toBeInTheDocument()
   })
@@ -86,8 +118,11 @@ describe('TodoApp — renders todos after load', () => {
       makeTodo({ id: '1', title: 'T1', completed: true }),
       makeTodo({ id: '2', title: 'T2', completed: false }),
     ]
+
     vi.stubGlobal('fetch', makeFetchMock([jsonResponse(todos)]))
+
     render(<TodoApp />)
+
     await waitFor(() => expect(screen.getByText('1 of 2 completed')).toBeInTheDocument())
   })
 })
@@ -95,13 +130,18 @@ describe('TodoApp — renders todos after load', () => {
 describe('TodoApp — add todo', () => {
   it('calls POST then re-fetches, new todo appears, input cleared', async () => {
     const newTodo = makeTodo({ id: 'new-1', title: 'New task' })
-    vi.stubGlobal('fetch', makeFetchMock([
-      jsonResponse([]),                        // initial GET
-      makeOkResponse(201),                     // POST
-      jsonResponse([newTodo]),                 // re-fetch GET
-    ]))
+
+    vi.stubGlobal(
+      'fetch',
+      makeFetchMock([
+        jsonResponse([]), // initial GET
+        makeOkResponse(201), // POST
+        jsonResponse([newTodo]), // re-fetch GET
+      ])
+    )
 
     const user = userEvent.setup()
+
     render(<TodoApp />)
     await waitFor(() => expect(screen.getByText('No todos yet')).toBeInTheDocument())
 
@@ -119,13 +159,17 @@ describe('TodoApp — toggle todo', () => {
     const todo = makeTodo({ id: 'abc', title: 'Toggle me', completed: false })
     const toggled = { ...todo, completed: true }
 
-    vi.stubGlobal('fetch', makeFetchMock([
-      jsonResponse([todo]),                    // initial GET
-      makeOkResponse(200),                     // PUT
-      jsonResponse([toggled]),                 // re-fetch GET
-    ]))
+    vi.stubGlobal(
+      'fetch',
+      makeFetchMock([
+        jsonResponse([todo]), // initial GET
+        makeOkResponse(200), // PUT
+        jsonResponse([toggled]), // re-fetch GET
+      ])
+    )
 
     const user = userEvent.setup()
+
     render(<TodoApp />)
     await waitFor(() => expect(screen.getByText('Toggle me')).toBeInTheDocument())
 
@@ -140,18 +184,22 @@ describe('TodoApp — edit todo', () => {
     const todo = makeTodo({ id: 'abc', title: 'Old title' })
     const updated = { ...todo, title: 'New title' }
 
-    const fetchMock = makeFetchMock([
-      jsonResponse([todo]),                    // initial GET
-      makeOkResponse(200),                     // PUT
-      jsonResponse([updated]),                 // re-fetch GET
-    ])
-    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal(
+      'fetch',
+      makeFetchMock([
+        jsonResponse([todo]), // initial GET
+        makeOkResponse(200), // PUT
+        jsonResponse([updated]), // re-fetch GET
+      ])
+    )
 
     const user = userEvent.setup()
+
     render(<TodoApp />)
     await waitFor(() => expect(screen.getByText('Old title')).toBeInTheDocument())
 
     await user.dblClick(screen.getByText('Old title'))
+
     const editInput = screen.getByDisplayValue('Old title')
     await user.clear(editInput)
     await user.type(editInput, 'New title{Enter}')
@@ -164,13 +212,17 @@ describe('TodoApp — delete todo', () => {
   it('calls DELETE then re-fetches, item removed', async () => {
     const todo = makeTodo({ id: 'del-1', title: 'Delete me' })
 
-    vi.stubGlobal('fetch', makeFetchMock([
-      jsonResponse([todo]),                    // initial GET
-      makeOkResponse(204),                     // DELETE
-      jsonResponse([]),                        // re-fetch GET
-    ]))
+    vi.stubGlobal(
+      'fetch',
+      makeFetchMock([
+        jsonResponse([todo]), // initial GET
+        makeOkResponse(204), // DELETE
+        jsonResponse([]), // re-fetch GET
+      ])
+    )
 
     const user = userEvent.setup()
+
     render(<TodoApp />)
     await waitFor(() => expect(screen.getByText('Delete me')).toBeInTheDocument())
 

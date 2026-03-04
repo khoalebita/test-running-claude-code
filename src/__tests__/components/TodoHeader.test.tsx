@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import TodoHeader from '../../components/TodoHeader'
+import TodoHeader from '../../components/todo/todo-header'
 
 describe('TodoHeader', () => {
   it('shows "Todo App" h1', () => {

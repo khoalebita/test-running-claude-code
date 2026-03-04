@@ -1,17 +1,25 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 
-interface TodoInputProps {
+type TodoInputProps = {
   onAdd: (title: string) => void
 }
 
 export default function TodoInput({ onAdd }: TodoInputProps) {
   const [value, setValue] = useState('')
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    setValue(event.target.value)
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+
     const trimmed = value.trim()
+
     if (!trimmed) return
+
     onAdd(trimmed)
+
     setValue('')
   }
 
@@ -20,10 +28,11 @@ export default function TodoInput({ onAdd }: TodoInputProps) {
       <input
         type="text"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={handleChange}
         placeholder="What needs to be done?"
         className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
       />
+
       <button
         type="submit"
         disabled={!value.trim()}

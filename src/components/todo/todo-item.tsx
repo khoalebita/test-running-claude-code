@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
-import type { Todo } from '../types/todo'
+import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react'
+import type { Todo } from '../../types/todo'
+import PencilIcon from '../icons/pencil-icon'
+import TrashIcon from '../icons/trash-icon'
 
-interface TodoItemProps {
+type TodoItemProps = {
   todo: Todo
   onToggle: (id: string) => void
   onEdit: (id: string, title: string) => void
@@ -20,27 +22,44 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemP
     }
   }, [editing])
 
+  function handleToggle() {
+    onToggle(todo.id)
+  }
+
+  function handleDelete() {
+    onDelete(todo.id)
+  }
+
+  function handleEditValueChange(event: ChangeEvent<HTMLInputElement>) {
+    setEditValue(event.target.value)
+  }
+
   function startEdit() {
     setEditValue(todo.title)
+
     setEditing(true)
   }
 
   function saveEdit() {
     const trimmed = editValue.trim()
+
     if (trimmed && trimmed !== todo.title) {
       onEdit(todo.id, trimmed)
     }
+
     setEditing(false)
   }
 
   function cancelEdit() {
     setEditValue(todo.title)
+
     setEditing(false)
   }
 
-  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') saveEdit()
-    if (e.key === 'Escape') cancelEdit()
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') saveEdit()
+
+    if (event.key === 'Escape') cancelEdit()
   }
 
   return (
@@ -48,7 +67,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemP
       <input
         type="checkbox"
         checked={todo.completed}
-        onChange={() => onToggle(todo.id)}
+        onChange={handleToggle}
         className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer accent-blue-600 shrink-0"
       />
 
@@ -57,7 +76,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemP
           ref={inputRef}
           type="text"
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={handleEditValueChange}
           onBlur={saveEdit}
           onKeyDown={handleKeyDown}
           className="flex-1 text-sm px-2 py-0.5 rounded border border-blue-400 outline-none focus:ring-2 focus:ring-blue-100"
@@ -77,22 +96,15 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemP
           title="Edit"
           className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
         >
-          {/* Pencil icon */}
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z" />
-          </svg>
+          <PencilIcon />
         </button>
+
         <button
-          onClick={() => onDelete(todo.id)}
+          onClick={handleDelete}
           title="Delete"
           className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
         >
-          {/* Trash icon */}
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
+          <TrashIcon />
         </button>
       </div>
     </li>

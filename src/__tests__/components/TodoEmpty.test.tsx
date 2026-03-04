@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import TodoEmpty from '../../components/TodoEmpty'
+import TodoEmpty from '../../components/todo/todo-empty'
 
 describe('TodoEmpty', () => {
   it('renders "No todos yet" text', () => {
