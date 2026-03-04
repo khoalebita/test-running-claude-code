@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "cd /Users/ledangkhoa/Desktop/testing-running-claude-code && npx prettier --write \"src/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"*.{ts,js}\" 2>&1 | tail -5"
+          },
+          {
+            "type": "command",
             "command": "cd /Users/ledangkhoa/Desktop/testing-running-claude-code && npm run lint 2>&1 | tail -20"
           },
           {

@@ -1,8 +1,8 @@
-import type { Todo } from '../types/todo'
-import TodoItem from './TodoItem'
-import TodoEmpty from './TodoEmpty'
+import type { Todo } from '../../types/todo'
+import TodoItem from './todo-item'
+import TodoEmpty from './todo-empty'
 
-interface TodoListProps {
+type TodoListProps = {
   todos: Todo[]
   onToggle: (id: string) => void
   onEdit: (id: string, title: string) => void

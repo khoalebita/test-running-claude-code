@@ -55,15 +55,43 @@ App
 
 | File | Role |
 |------|------|
-| `src/types/todo.ts` | Shared Todo interface |
+| `src/types/todo.ts` | Shared `Todo` type |
 | `server/db.ts` | SQLite init + schema |
 | `server/routes/todos.ts` | All 4 CRUD endpoints |
 | `server/index.ts` | Express entry point (port 3001) |
-| `src/components/TodoApp.tsx` | State owner, API orchestration |
-| `src/components/TodoItem.tsx` | Inline editing UX |
+| `src/components/todo/index.tsx` | State owner, API orchestration, optimistic updates |
+| `src/components/todo/todo-item.tsx` | Inline editing UX |
+| `src/components/icons/` | Shared SVG icon components (kebab-case) |
 | `vite.config.ts` | TailwindCSS v4 plugin + /api proxy |
 | `.claude/settings.json` | PostToolUse hooks (lint + typecheck) |
 | `tsconfig.server.json` | TypeScript config for server/ files |
+
+## Coding Standards
+
+### TypeScript
+- **No type assertions** (`as Foo`) anywhere in the codebase. Declare typed variables, use generics, or type function return values explicitly instead.
+- **No `unknown` or `any`** — always declare a concrete named type. Exception: the single adapter boundary in test mock setup (`as unknown as Database`) is documented and justified.
+- **`type` over `interface`** for component props and all data shapes. Use `interface` only when declaration merging is explicitly required (it never is in this project).
+- **No deprecated types** — use lowercase primitives (`string`, `number`, `boolean`) never the wrapper classes (`String`, `Number`, `Boolean`). Do not use `React.FC`, `React.VoidFunctionComponent`, or `React.ReactChild`.
+- **Reusable types** — extract shared types into `src/types/` (client) or `server/types/` (server). Never inline a one-off type assertion when a named type can be declared.
+
+### Code Style
+- **One blank line between statements** inside function bodies to separate logical steps.
+- **No abbreviations** — variable names must be fully descriptive. Never use single-letter or shortened names (`t` → `todo`, `e` → `event`, `res` → `response`).
+- **No inline arrow functions as props** — if a JSX prop value is a function, extract it as a named function inside the component (e.g. `handleChange`, `handleDelete`). Render-mapping callbacks (`.map((todo) => <TodoItem />)`) are exempt.
+- **Utility functions in `utils/`** — standalone functions that are not component bodies or route handlers belong in `src/utils/` (client) or `server/utils/` (server).
+- **Icon components** — every SVG icon lives in its own component under `src/components/icons/` (kebab-case file name, PascalCase export).
+- **kebab-case file names** — all component files use kebab-case (`todo-item.tsx`, `pencil-icon.tsx`). Exports remain PascalCase.
+- **Optimistic UI** — mutations (add, toggle, edit, delete) update local state immediately before the API call, then re-sync with `loadTodos()` to confirm server state.
+- **Prettier** runs automatically via PostToolUse hook after every file edit. Config: `semi: false`, `singleQuote: true`, `printWidth: 100`.
+
+### Key Type Files
+| File | Purpose |
+|------|---------|
+| `src/types/todo.ts` | `Todo` — shared client type |
+| `src/utils/api.ts` | `fetchTodos`, `createTodo`, `updateTodo`, `deleteTodo` |
+| `server/types/todo.ts` | `TodoRow`, `CreateTodoBody`, `UpdateTodoBody` |
+| `server/utils/todoUtils.ts` | `rowToTodo` — SQLite row → domain type |
 
 ## TailwindCSS v4 Notes
 

@@ -33,7 +33,7 @@ describe('Full CRUD flow', () => {
     // Create
     const createRes = await request(app).post('/api/todos').send({ title: 'Buy milk' })
     expect(createRes.status).toBe(201)
-    const id = createRes.body.id as string
+    const id: string = createRes.body.id
     expect(createRes.body.title).toBe('Buy milk')
     expect(createRes.body.completed).toBe(false)
 
@@ -44,7 +44,9 @@ describe('Full CRUD flow', () => {
     expect(listRes.body[0].id).toBe(id)
 
     // Update title
-    const updateTitleRes = await request(app).put(`/api/todos/${id}`).send({ title: 'Buy oat milk' })
+    const updateTitleRes = await request(app)
+      .put(`/api/todos/${id}`)
+      .send({ title: 'Buy oat milk' })
     expect(updateTitleRes.status).toBe(200)
     expect(updateTitleRes.body.title).toBe('Buy oat milk')
     expect(updateTitleRes.body.completed).toBe(false)
@@ -68,13 +70,22 @@ describe('Full CRUD flow', () => {
 describe('GET /api/todos ordering', () => {
   it('returns todos in created_at ASC order', async () => {
     db.prepare('INSERT INTO todos (id, title, completed, created_at) VALUES (?, ?, ?, ?)').run(
-      'id-3', 'Third', 0, 3000
+      'id-3',
+      'Third',
+      0,
+      3000
     )
     db.prepare('INSERT INTO todos (id, title, completed, created_at) VALUES (?, ?, ?, ?)').run(
-      'id-1', 'First', 0, 1000
+      'id-1',
+      'First',
+      0,
+      1000
     )
     db.prepare('INSERT INTO todos (id, title, completed, created_at) VALUES (?, ?, ?, ?)').run(
-      'id-2', 'Second', 0, 2000
+      'id-2',
+      'Second',
+      0,
+      2000
     )
 
     const res = await request(app).get('/api/todos')
@@ -86,10 +97,16 @@ describe('GET /api/todos ordering', () => {
 describe('completed field is always boolean', () => {
   it('never returns 0 or 1 for completed', async () => {
     db.prepare('INSERT INTO todos (id, title, completed, created_at) VALUES (?, ?, ?, ?)').run(
-      'id-a', 'Done', 1, 1000
+      'id-a',
+      'Done',
+      1,
+      1000
     )
     db.prepare('INSERT INTO todos (id, title, completed, created_at) VALUES (?, ?, ?, ?)').run(
-      'id-b', 'Not done', 0, 2000
+      'id-b',
+      'Not done',
+      0,
+      2000
     )
 
     const res = await request(app).get('/api/todos')
@@ -129,7 +146,7 @@ describe('Edge cases', () => {
 
   it('partial update preserves existing title when only completed sent', async () => {
     const create = await request(app).post('/api/todos').send({ title: 'Keep this' })
-    const id = create.body.id as string
+    const id: string = create.body.id
 
     const update = await request(app).put(`/api/todos/${id}`).send({ completed: true })
     expect(update.body.title).toBe('Keep this')
@@ -138,7 +155,7 @@ describe('Edge cases', () => {
 
   it('partial update preserves completed when only title sent', async () => {
     const create = await request(app).post('/api/todos').send({ title: 'Original' })
-    const id = create.body.id as string
+    const id: string = create.body.id
     await request(app).put(`/api/todos/${id}`).send({ completed: true })
 
     const update = await request(app).put(`/api/todos/${id}`).send({ title: 'Renamed' })
